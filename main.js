@@ -199,7 +199,7 @@ async function main () {
         if(a[partyKey] < b[partyKey]){
           return -1;
         }
-        if(a[partyKey] < b[partyKey]){
+        if(a[partyKey] > b[partyKey]){
           return 1;
         }
         return 0;
