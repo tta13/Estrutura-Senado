@@ -156,6 +156,43 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
       });
 }
 
+function getPartyColors(parties) {
+    var partyColors = parties.map(party => { 
+        return {party: party, color: getRandomColor()}
+    });
+    console.log(partyColors);
+    return partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
+}
+
+function generateSvg() {
+    return d3.select('body')
+      .append('svg')
+      .attr("width", width)
+      .attr("height", height);
+}
+
+function drawCircles(svg, data, partyColors) {
+    svg.selectAll('circle')
+      .data(data)
+      .enter()
+      .insert('circle')
+      .attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', seatRadius)
+      .attr('fill', (d) => partyColors[d[partyKey]])
+      .on('mouseover', function () {
+        d3.select(this)
+          .style('opacity', 0.5)
+          .style('stroke-width', 2)
+          .style('stroke', 'black');
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+        .style('opacity', 1.0)
+        .style('stroke-width', 0);
+      });
+}
+
 async function main () {  
     const dataTable = await getData(dataUrl);
     dataTable.sort(function compare( a, b ) {
@@ -174,42 +211,15 @@ async function main () {
         return {x: circledata[i].x, y: circledata[i].y, ...data};
     });
 
-    var parties = getParties(aggData);
-    var partyColors = parties.map(party => { 
-        return {party: party, color: getRandomColor()}
-    });
-    console.log(partyColors);
-    partyColors = partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
-    const svg = d3.select('body')
-      .append('svg')
-      .attr("width", width)
-      .attr("height", height)
-
-    svg.selectAll('circle')
-      .data(aggData)
-      .enter()
-      .insert('circle')
-      .attr('cx', (d) => d.x)
-      .attr('cy', (d) => d.y)
-      .attr('r', seatRadius)
-      .attr('fill', (d) => partyColors[d[partyKey]])
-      .on('mouseover', function () {
-        d3.select(this)
-          .style('opacity', 0.5)
-          .style('stroke-width', 2)
-          .style('stroke', 'black');
-      })
-      .on('mouseout', function () {
-        d3.select(this)
-        .style('opacity', 1.0)
-        .style('stroke-width', 0);
-      });
+    const svg = generateSvg();
+    
+    var partyColors = getPartyColors(getParties(aggData));
+    drawCircles(svg, aggData, partyColors);
+    
     svg.append('text')
       .attr('x', width/2 - 45)
-      .attr('y', height - 1)
+      .attr('y', height - 2)
       .style('font-size', '5rem')
-      .style('font-weight', 'bold')
-      .style('font-family', 'sans-serif')
       .text(aggData.length);   
 }
 
