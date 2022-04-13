@@ -25,8 +25,12 @@ async function getData (url) {
     return data;
 }
 
-function getParties() {
-    return
+function getParties(dataset) {
+    return [...new Set(dataset.map(item => item[partyKey]))];
+}
+
+function getRandomColor(){
+    return '#'+ Math.floor(Math.random()*16777215).toString(16);
 }
 
 function generatePartial({
@@ -154,13 +158,28 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
 
 async function main () {  
     const dataTable = await getData(dataUrl);
+    dataTable.sort(function compare( a, b ) {
+        if(a[partyKey] < b[partyKey]){
+          return -1;
+        }
+        if(a[partyKey] < b[partyKey]){
+          return 1;
+        }
+        return 0;
+      })
     const circledata = generateParliamentChart(dataTable.length, 
         {sections: 1, sectionGap: 0, seatRadius: seatRadius, rowHeight: rowHeight}, width);
     // console.log(circledata);
     var aggData = dataTable.map(function(data, i){
         return {x: circledata[i].x, y: circledata[i].y, ...data};
     });
-    console.log(aggData);
+
+    var parties = getParties(aggData);
+    var partyColors = parties.map(party => { 
+        return {party: party, color: getRandomColor()}
+    });
+    console.log(partyColors);
+    partyColors = partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
     const svg = d3.select('body')
       .append('svg')
       .attr("width", width)
@@ -173,7 +192,18 @@ async function main () {
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
       .attr('r', seatRadius)
-      .attr('fill', (d) => d.color || '#000000');
+      .attr('fill', (d) => partyColors[d[partyKey]])
+      .on('mouseover', function () {
+        d3.select(this)
+          .style('opacity', 0.5)
+          .style('stroke-width', 2)
+          .style('stroke', 'black');
+      })
+      .on('mouseout', function () {
+        d3.select(this)
+        .style('opacity', 1.0)
+        .style('stroke-width', 0);
+      });
     svg.append('text')
       .attr('x', width/2 - 45)
       .attr('y', height - 1)
@@ -190,4 +220,5 @@ const width = 928;
 const height = 464;
 const seatRadius = 25;
 const rowHeight = 55;
+const partyKey = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.SiglaPartidoParlamentar';
 main();
