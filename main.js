@@ -157,10 +157,9 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
 }
 
 function getPartyColors(parties) {
-    var partyColors = parties.map(party => { 
+    var partyColors = parties.map(party => {
         return {party: party, color: getRandomColor()}
     });
-    console.log(partyColors);
     return partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
 }
 
@@ -169,7 +168,59 @@ function generateSvg() {
       .append('svg')
       .attr("width", width)
       .attr("height", height)
+      .style("margin-left", "5px")
       .style("margin-top", "1rem");
+}
+
+function generateScndSvg() {
+    return d3.select('#div_template')
+        .append('svg')
+        .attr("width", 400)
+        .attr("height", 490)
+        .style("margin-top", "1rem");
+}
+
+function drawSubtitles(svg, partyList, partyColors) {
+    console.log(partyColors);
+    partyColorsArray = Array.from(partyList)
+
+
+    for (index in partyColorsArray) {
+        if (index >= (partyColorsArray.length/2)) {
+            break;
+        }
+        party = partyColorsArray[index];
+
+        svg.append('circle')
+            .style('cx', 50)
+            .style('cy', 110 + index * 60)
+            .style('r', seatRadius)
+            .style('fill', partyColors[party])
+        svg.append('text')
+            .attr('x', 75)
+            .attr('y', 110 + index * 60)
+            .style('font-size', '1.25rem')
+            .text(party);
+    }
+
+    for (index in Array.from(partyList)) {
+        if (index < (partyColorsArray.length / 2)) {
+            continue;
+        }
+        party = partyColorsArray[index];
+
+        svg.append('circle')
+            .style('cx', 215)
+            .style('cy', 110 + (index-7) * 60)
+            .style('r', seatRadius)
+            .style('fill', partyColors[party])
+        svg.append('text')
+            .attr('x', 240)
+            .attr('y', 110 + (index - 7) * 60)
+            .style('font-size', '1.25rem')
+            .text(party);
+    }
+
 }
 
 function drawCircles(svg, data, partyColors) {
@@ -199,7 +250,6 @@ function drawCircles(svg, data, partyColors) {
 function mouseclick(picUrl, party, senator) {
     console.log(picUrl, party, senator);
     div = d3.select('h2');
-    console.log(div['_groups'][0][0]);
 
     if (div['_groups'][0][0] == null) {
         Tooltip
@@ -243,8 +293,8 @@ async function main () {
       })
     const circledata = generateParliamentChart(dataTable.length, 
         {sections: 1, sectionGap: 0, seatRadius: seatRadius, rowHeight: rowHeight}, width);
-    // console.log(circledata);
-    var aggData = dataTable.map(function(data, i){
+    //console.log(circledata);
+    var aggData = dataTable.map(function (data, i) {
         return {x: circledata[i].x, y: circledata[i].y, ...data};
     });
 
@@ -257,15 +307,24 @@ async function main () {
       .attr('x', width/2 - 45)
       .attr('y', height - 2)
       .style('font-size', '5rem')
-      .text(aggData.length);   
+        .text(aggData.length);
+
+
+    var partyList = new Set();
+    for (datinha of dataTable) {
+        partyList.add(datinha[partyKey]);
+    }
+
+    const scndSvg = generateScndSvg();
+    drawSubtitles(scndSvg,partyList, partyColors);
 }
 
 // data URL
 const dataUrl = 'https://raw.githubusercontent.com/nivan/testPython/main/ListaParlamentarEmExercicio.csv';
 // chart parameters
-const width = 928;
-const height = 464;
-const seatRadius = 25;
+const width = 780;
+const height = 390;
+const seatRadius = 20;
 const rowHeight = 55;
 const partyKey = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.SiglaPartidoParlamentar';
 const picUrl = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.UrlFotoParlamentar';
