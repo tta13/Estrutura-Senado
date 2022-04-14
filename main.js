@@ -198,18 +198,48 @@ function drawCircles(svg, data, partyColors) {
 
 function mouseclick(picUrl, party, senator) {
     console.log(picUrl, party, senator);
-    Tooltip
-      .style("opacity", 1)
-      .append("h2")
-      .style("margin-left", "1rem")
-      .style("margin-bottom", "-.5rem")
-      .text("Perfil individual:");
-    Tooltip.append("div")
-      .style("stroke", "black")
-      .style("display", "flex")
-      .style("flex-direction", "row")
-      .style("padding", "1rem")
-      .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+    div = d3.select('h2');
+    console.log(div['_groups'][0][0]);
+
+    if (div['_groups'][0][0] == null) {
+        Tooltip
+            .style("opacity", 1)
+            .append("h2")
+            .style("margin-left", "1rem")
+            .style("margin-bottom", "-.5rem")
+            .text("Perfil individual:");
+        Tooltip.append("div")
+            .style("stroke", "black")
+            .style("display", "flex")
+            .style("flex-direction", "row")
+            .style("padding", "1rem")
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+    } else {
+        Tooltip
+            .style("opacity", 1)
+            .select("h2")
+            .style("margin-left", "1rem")
+            .style("margin-bottom", "-.5rem")
+            .text("Perfil individual:");
+        Tooltip.select("div")
+            .style("stroke", "black")
+            .style("display", "flex")
+            .style("flex-direction", "row")
+            .style("padding", "1rem")
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+    }
+    //Tooltip
+    //  .style("opacity", 1)
+    //  .select("h2")
+    //  .style("margin-left", "1rem")
+    //  .style("margin-bottom", "-.5rem")
+    //  .text("Perfil individual:");
+    //Tooltip.append("div")
+    //  .style("stroke", "black")
+    //  .style("display", "flex")
+    //  .style("flex-direction", "row")
+    //  .style("padding", "1rem")
+    //  .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
 }
 
 async function main () {  
