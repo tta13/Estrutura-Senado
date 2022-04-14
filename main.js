@@ -168,47 +168,49 @@ function generateSvg() {
     return d3.select('#div_template')
       .append('svg')
       .attr("width", width)
-      .attr("height", height);
+      .attr("height", height)
+      .style("margin-top", "1rem");
 }
 
 function drawCircles(svg, data, partyColors) {
-    console.log(data);
-    for(d of data) {
-        svg.append('circle')
-        // .data(dado)
-        // .enter()
-        // .insert('circle')
-        .attr('cx', d.x)
-        .attr('cy', d.y)
-        .attr('r', seatRadius)
-        .attr('fill', partyColors[d[partyKey]])
-        .on('click', function(){
-            mouseclick(d);
-        })
-        .on('mouseover', function () {
-            d3.select(this)
-            .style('opacity', 0.5)
-            .style('stroke-width', 2)
-            .style('stroke', 'black');
-        })
-        .on('mouseout', function () {
-            d3.select(this)
-            .style('opacity', 1.0)
-            .style('stroke-width', 0);
-        });
-    }
+    svg.selectAll('circle')
+      .data(data)
+      .enter()
+      .insert('circle')
+      .attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', seatRadius)
+      .attr('fill', (d) => partyColors[d[partyKey]])
+      .html((d) => `<title>${d[senatorName]} &#010;${d[partyKey]}</title>`)
+      .attr('onclick', (d) => `mouseclick('${d[picUrl]}', '${d[partyKey]}', '${d[senatorName]}')`)
+      .on('mouseover', function () {
+          d3.select(this)
+          .style('opacity', 0.5)
+          .style('stroke-width', 2)
+          .style('stroke', 'black');
+      })
+      .on('mouseout', function () {
+          d3.select(this)
+          .style('opacity', 1.0)
+          .style('stroke-width', 0);
+      });
 }
 
-var mouseclick = function(d) {
-    console.log(d);
+function mouseclick(picUrl, party, senator) {
+    console.log(picUrl, party, senator);
     Tooltip
       .style("opacity", 1)
+      .append("h2")
+      .style("margin-left", "1rem")
+      .style("margin-bottom", "-.5rem")
+      .text("Perfil individual:");
+    Tooltip.append("div")
       .style("stroke", "black")
       .style("display", "flex")
       .style("flex-direction", "row")
       .style("padding", "1rem")
-      .html(`<img height="128px" src="${d[picUrl]}" style="margin-right:1rem"><div>${d[partyKey]}<br>${d[senatorName]}</div>`);
-  }
+      .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+}
 
 async function main () {  
     const dataTable = await getData(dataUrl);
@@ -250,6 +252,7 @@ const rowHeight = 55;
 const partyKey = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.SiglaPartidoParlamentar';
 const picUrl = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.UrlFotoParlamentar';
 const senatorName = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.NomeCompletoParlamentar';
+const senatorId = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.CodigoParlamentar';
 // create a tooltip
 var Tooltip = d3.select("#div_template")
     .append("div")
