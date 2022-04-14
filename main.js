@@ -228,18 +228,6 @@ function mouseclick(picUrl, party, senator) {
             .style("padding", "1rem")
             .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
     }
-    //Tooltip
-    //  .style("opacity", 1)
-    //  .select("h2")
-    //  .style("margin-left", "1rem")
-    //  .style("margin-bottom", "-.5rem")
-    //  .text("Perfil individual:");
-    //Tooltip.append("div")
-    //  .style("stroke", "black")
-    //  .style("display", "flex")
-    //  .style("flex-direction", "row")
-    //  .style("padding", "1rem")
-    //  .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
 }
 
 async function main () {  
