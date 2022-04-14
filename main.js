@@ -165,33 +165,50 @@ function getPartyColors(parties) {
 }
 
 function generateSvg() {
-    return d3.select('body')
+    return d3.select('#div_template')
       .append('svg')
       .attr("width", width)
       .attr("height", height);
 }
 
 function drawCircles(svg, data, partyColors) {
-    svg.selectAll('circle')
-      .data(data)
-      .enter()
-      .insert('circle')
-      .attr('cx', (d) => d.x)
-      .attr('cy', (d) => d.y)
-      .attr('r', seatRadius)
-      .attr('fill', (d) => partyColors[d[partyKey]])
-      .on('mouseover', function () {
-        d3.select(this)
-          .style('opacity', 0.5)
-          .style('stroke-width', 2)
-          .style('stroke', 'black');
-      })
-      .on('mouseout', function () {
-        d3.select(this)
-        .style('opacity', 1.0)
-        .style('stroke-width', 0);
-      });
+    console.log(data);
+    for(d of data) {
+        svg.append('circle')
+        // .data(dado)
+        // .enter()
+        // .insert('circle')
+        .attr('cx', d.x)
+        .attr('cy', d.y)
+        .attr('r', seatRadius)
+        .attr('fill', partyColors[d[partyKey]])
+        .on('click', function(){
+            mouseclick(d);
+        })
+        .on('mouseover', function () {
+            d3.select(this)
+            .style('opacity', 0.5)
+            .style('stroke-width', 2)
+            .style('stroke', 'black');
+        })
+        .on('mouseout', function () {
+            d3.select(this)
+            .style('opacity', 1.0)
+            .style('stroke-width', 0);
+        });
+    }
 }
+
+var mouseclick = function(d) {
+    console.log(d);
+    Tooltip
+      .style("opacity", 1)
+      .style("stroke", "black")
+      .style("display", "flex")
+      .style("flex-direction", "row")
+      .style("padding", "1rem")
+      .html(`<img height="128px" src="${d[picUrl]}" style="margin-right:1rem"><div>${d[partyKey]}<br>${d[senatorName]}</div>`);
+  }
 
 async function main () {  
     const dataTable = await getData(dataUrl);
@@ -231,4 +248,16 @@ const height = 464;
 const seatRadius = 25;
 const rowHeight = 55;
 const partyKey = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.SiglaPartidoParlamentar';
+const picUrl = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.UrlFotoParlamentar';
+const senatorName = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.NomeCompletoParlamentar';
+// create a tooltip
+var Tooltip = d3.select("#div_template")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "1px")
+    .style("border-radius", "5px")
+    .style("padding", "5px");
 main();
