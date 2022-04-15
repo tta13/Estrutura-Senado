@@ -29,10 +29,6 @@ function getParties(dataset) {
     return [...new Set(dataset.map(item => item[partyKey]))];
 }
 
-function getRandomColor(){
-    return '#'+ Math.floor(Math.random()*16777215).toString(16);
-}
-
 function generatePartial({
     seats, startRad, endRad, seatRadius, rowHeight, graphicHeight, sectionGap,
   }) {
@@ -157,10 +153,13 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
 }
 
 function getPartyColors(parties) {
-    var partyColors = parties.map(party => {
-        return {party: party, color: getRandomColor()}
-    });
-    return partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
+
+    var myColor = d3.scaleOrdinal().domain(parties)
+        .range(d3.schemeSet3);
+
+    console.log(myColor(3));
+
+    return myColor
 }
 
 function generateSvg() {
@@ -181,8 +180,9 @@ function generateScndSvg() {
 }
 
 function drawSubtitles(svg, partyList, partyColors) {
-    console.log(partyColors);
     partyColorsArray = Array.from(partyList)
+
+    console.log(partyColorsArray);
 
 
     for (index in partyColorsArray) {
@@ -190,6 +190,8 @@ function drawSubtitles(svg, partyList, partyColors) {
             break;
         }
         party = partyColorsArray[index];
+        console.log(index)
+        console.log(partyColors(index))
 
         svg.append('rect')
             .style('x', 45)
@@ -197,7 +199,7 @@ function drawSubtitles(svg, partyList, partyColors) {
             .attr('width', seatRadius + 10)
             .attr('height', seatRadius)
             .attr('stroke', 'black')
-            .style('fill', partyColors[party])
+            .style('fill', partyColors(index))
         svg.append('text')
             .attr('x', 80)
             .attr('y', 115 + index * 45)
@@ -210,6 +212,8 @@ function drawSubtitles(svg, partyList, partyColors) {
             continue;
         }
         party = partyColorsArray[index];
+        console.log(index)
+        console.log(partyColors(index))
 
         svg.append('rect')
             .style('x', 205)
@@ -217,7 +221,7 @@ function drawSubtitles(svg, partyList, partyColors) {
             .style('width', seatRadius + 10)
             .style('height', seatRadius)
             .attr('stroke', 'black')
-            .style('fill', partyColors[party])
+            .style('fill', partyColors(index))
         svg.append('text')
             .attr('x', 240)
             .attr('y', 115 + (index - 7) * 45)
@@ -227,7 +231,16 @@ function drawSubtitles(svg, partyList, partyColors) {
 
 }
 
-function drawCircles(svg, data, partyColors) {
+function drawCircles(svg, data, partyColors, partyList) {
+
+    var partyColorsArray = Array.from(partyList);
+
+    for (i in partyColorsArray) {
+        console.log(i);
+        console.log(partyColors(i))
+    }
+
+    console.log(partyColorsArray);
     svg.selectAll('circle')
       .data(data)
       .enter()
@@ -235,7 +248,7 @@ function drawCircles(svg, data, partyColors) {
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
       .attr('r', seatRadius)
-      .attr('fill', (d) => partyColors[d[partyKey]])
+        .attr('fill', (d) => partyColors(partyColorsArray.indexOf(d[partyKey])))
       .html((d) => `<title>${d[senatorName]} &#010;${d[partyKey]}</title>`)
       .attr('onclick', (d) => `mouseclick('${d[picUrl]}', '${d[partyKey]}', '${d[senatorName]}')`)
       .on('mouseover', function () {
@@ -303,21 +316,20 @@ async function main () {
     });
 
     const svg = generateSvg();
+
+    var partyList = new Set();
+    for (datinha of dataTable) {
+        partyList.add(datinha[partyKey]);
+    }
     
     var partyColors = getPartyColors(getParties(aggData));
-    drawCircles(svg, aggData, partyColors);
+    drawCircles(svg, aggData, partyColors, partyList);
     
     svg.append('text')
       .attr('x', width/2 - 45)
       .attr('y', height - 2)
       .style('font-size', '5rem')
         .text(aggData.length);
-
-
-    var partyList = new Set();
-    for (datinha of dataTable) {
-        partyList.add(datinha[partyKey]);
-    }
 
     const scndSvg = generateScndSvg();
     drawSubtitles(scndSvg,partyList, partyColors);
