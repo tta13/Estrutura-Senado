@@ -176,7 +176,7 @@ function generateScndSvg() {
     return d3.select('#div_template')
         .append('svg')
         .attr("width", 400)
-        .attr("height", 490)
+        .attr("height", 390)
         .style("margin-top", "1rem");
 }
 
@@ -191,14 +191,16 @@ function drawSubtitles(svg, partyList, partyColors) {
         }
         party = partyColorsArray[index];
 
-        svg.append('circle')
-            .style('cx', 50)
-            .style('cy', 110 + index * 60)
-            .style('r', seatRadius)
+        svg.append('rect')
+            .style('x', 45)
+            .style('y', 100 + index * 45)
+            .attr('width', seatRadius + 10)
+            .attr('height', seatRadius)
+            .attr('stroke', 'black')
             .style('fill', partyColors[party])
         svg.append('text')
-            .attr('x', 75)
-            .attr('y', 110 + index * 60)
+            .attr('x', 80)
+            .attr('y', 115 + index * 45)
             .style('font-size', '1.25rem')
             .text(party);
     }
@@ -209,14 +211,16 @@ function drawSubtitles(svg, partyList, partyColors) {
         }
         party = partyColorsArray[index];
 
-        svg.append('circle')
-            .style('cx', 215)
-            .style('cy', 110 + (index-7) * 60)
-            .style('r', seatRadius)
+        svg.append('rect')
+            .style('x', 205)
+            .style('y', 100 + (index-7) * 45)
+            .style('width', seatRadius + 10)
+            .style('height', seatRadius)
+            .attr('stroke', 'black')
             .style('fill', partyColors[party])
         svg.append('text')
             .attr('x', 240)
-            .attr('y', 110 + (index - 7) * 60)
+            .attr('y', 115 + (index - 7) * 45)
             .style('font-size', '1.25rem')
             .text(party);
     }
