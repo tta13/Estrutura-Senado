@@ -155,11 +155,11 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
 function getPartyColors(parties) {
 
     var myColor = d3.scaleOrdinal().domain(parties)
-        .range(d3.schemeSet3);
+    .range(["gold", "blue", "green", "yellow", "black", "red", "grey", "greenyellow", "crimson", "pink", "brown", "slateblue", "navy", "orange", "lightblue", "coral", "magenta"])
 
-    console.log(myColor(3));
+    // console.log(myColor(3));
 
-    return myColor
+    return myColor;
 }
 
 function generateSvg() {
@@ -191,7 +191,7 @@ function drawSubtitles(svg, partyList, partyColors) {
         }
         party = partyColorsArray[index];
         console.log(index)
-        console.log(partyColors(index))
+        // console.log(partyColors(index))
 
         svg.append('rect')
             .style('x', 45)
@@ -199,7 +199,7 @@ function drawSubtitles(svg, partyList, partyColors) {
             .attr('width', seatRadius + 10)
             .attr('height', seatRadius)
             .attr('stroke', 'black')
-            .style('fill', partyColors(index))
+            .style('fill', partyColors(party))
         svg.append('text')
             .attr('x', 80)
             .attr('y', 115 + index * 45)
@@ -207,7 +207,7 @@ function drawSubtitles(svg, partyList, partyColors) {
             .text(party);
     }
 
-    for (index in Array.from(partyList)) {
+    for (index in partyColorsArray) {
         if (index < (partyColorsArray.length / 2)) {
             continue;
         }
@@ -221,7 +221,7 @@ function drawSubtitles(svg, partyList, partyColors) {
             .style('width', seatRadius + 10)
             .style('height', seatRadius)
             .attr('stroke', 'black')
-            .style('fill', partyColors(index))
+            .style('fill', partyColors(party))
         svg.append('text')
             .attr('x', 240)
             .attr('y', 115 + (index - 7) * 45)
@@ -231,16 +231,15 @@ function drawSubtitles(svg, partyList, partyColors) {
 
 }
 
-function drawCircles(svg, data, partyColors, partyList) {
+function drawCircles(svg, data, partyColors) {
+    // var partyColorsArray = Array.from(partyList);
 
-    var partyColorsArray = Array.from(partyList);
+    // for (i in partyColorsArray) {
+    //     console.log(i);
+    //     console.log(partyColors(i))
+    // }
 
-    for (i in partyColorsArray) {
-        console.log(i);
-        console.log(partyColors(i))
-    }
-
-    console.log(partyColorsArray);
+    // console.log(partyColorsArray);
     svg.selectAll('circle')
       .data(data)
       .enter()
@@ -248,7 +247,7 @@ function drawCircles(svg, data, partyColors, partyList) {
       .attr('cx', (d) => d.x)
       .attr('cy', (d) => d.y)
       .attr('r', seatRadius)
-        .attr('fill', (d) => partyColors(partyColorsArray.indexOf(d[partyKey])))
+        .attr('fill', (d) => partyColors(d[partyKey]))
       .html((d) => `<title>${d[senatorName]} &#010;${d[partyKey]}</title>`)
       .attr('onclick', (d) => `mouseclick('${d[picUrl]}', '${d[partyKey]}', '${d[senatorName]}')`)
       .on('mouseover', function () {
@@ -274,26 +273,26 @@ function mouseclick(picUrl, party, senator) {
             .append("h2")
             .style("margin-left", "1rem")
             .style("margin-bottom", "-.5rem")
-            .text("Perfil individual:");
+            .text("Perfil individual");
         Tooltip.append("div")
             .style("stroke", "black")
             .style("display", "flex")
             .style("flex-direction", "row")
             .style("padding", "1rem")
-            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>Partido: ${party}<br>Nome: ${senator}</div>`);
     } else {
         Tooltip
             .style("opacity", 1)
             .select("h2")
             .style("margin-left", "1rem")
             .style("margin-bottom", "-.5rem")
-            .text("Perfil individual:");
+            .text("Perfil individual");
         Tooltip.select("div")
             .style("stroke", "black")
             .style("display", "flex")
             .style("flex-direction", "row")
             .style("padding", "1rem")
-            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>Partido: ${party}<br>Nome: ${senator}</div>`);
     }
 }
 
@@ -317,13 +316,9 @@ async function main () {
 
     const svg = generateSvg();
 
-    var partyList = new Set();
-    for (datinha of dataTable) {
-        partyList.add(datinha[partyKey]);
-    }
-    
-    var partyColors = getPartyColors(getParties(aggData));
-    drawCircles(svg, aggData, partyColors, partyList);
+    const partyList = getParties(aggData);
+    var partyColors = getPartyColors(partyList);
+    drawCircles(svg, aggData, partyColors);
     
     svg.append('text')
       .attr('x', width/2 - 45)
@@ -332,7 +327,7 @@ async function main () {
         .text(aggData.length);
 
     const scndSvg = generateScndSvg();
-    drawSubtitles(scndSvg,partyList, partyColors);
+    drawSubtitles(scndSvg, partyList, partyColors);
 }
 
 // data URL
