@@ -157,18 +157,74 @@ function generateParliamentChart (totalPoints, { sections, sectionGap, seatRadiu
 }
 
 function getPartyColors(parties) {
-    var partyColors = parties.map(party => { 
+    var partyColors = parties.map(party => {
         return {party: party, color: getRandomColor()}
     });
-    console.log(partyColors);
     return partyColors.reduce((acc, {party, color}) => ({ ...acc, [party]: color }), {});
 }
 
 function generateSvg() {
-    return d3.select('body')
+    return d3.select('#div_template')
       .append('svg')
       .attr("width", width)
-      .attr("height", height);
+      .attr("height", height)
+      .style("margin-left", "5px")
+      .style("margin-top", "1rem");
+}
+
+function generateScndSvg() {
+    return d3.select('#div_template')
+        .append('svg')
+        .attr("width", 400)
+        .attr("height", 390)
+        .style("margin-top", "1rem");
+}
+
+function drawSubtitles(svg, partyList, partyColors) {
+    console.log(partyColors);
+    partyColorsArray = Array.from(partyList)
+
+
+    for (index in partyColorsArray) {
+        if (index >= (partyColorsArray.length/2)) {
+            break;
+        }
+        party = partyColorsArray[index];
+
+        svg.append('rect')
+            .style('x', 45)
+            .style('y', 100 + index * 45)
+            .attr('width', seatRadius + 10)
+            .attr('height', seatRadius)
+            .attr('stroke', 'black')
+            .style('fill', partyColors[party])
+        svg.append('text')
+            .attr('x', 80)
+            .attr('y', 115 + index * 45)
+            .style('font-size', '1.25rem')
+            .text(party);
+    }
+
+    for (index in Array.from(partyList)) {
+        if (index < (partyColorsArray.length / 2)) {
+            continue;
+        }
+        party = partyColorsArray[index];
+
+        svg.append('rect')
+            .style('x', 205)
+            .style('y', 100 + (index-7) * 45)
+            .style('width', seatRadius + 10)
+            .style('height', seatRadius)
+            .attr('stroke', 'black')
+            .style('fill', partyColors[party])
+        svg.append('text')
+            .attr('x', 240)
+            .attr('y', 115 + (index - 7) * 45)
+            .style('font-size', '1.25rem')
+            .text(party);
+    }
+
 }
 
 function drawCircles(svg, data, partyColors) {
@@ -180,17 +236,52 @@ function drawCircles(svg, data, partyColors) {
       .attr('cy', (d) => d.y)
       .attr('r', seatRadius)
       .attr('fill', (d) => partyColors[d[partyKey]])
+      .html((d) => `<title>${d[senatorName]} &#010;${d[partyKey]}</title>`)
+      .attr('onclick', (d) => `mouseclick('${d[picUrl]}', '${d[partyKey]}', '${d[senatorName]}')`)
       .on('mouseover', function () {
-        d3.select(this)
+          d3.select(this)
           .style('opacity', 0.5)
           .style('stroke-width', 2)
           .style('stroke', 'black');
       })
       .on('mouseout', function () {
-        d3.select(this)
-        .style('opacity', 1.0)
-        .style('stroke-width', 0);
+          d3.select(this)
+          .style('opacity', 1.0)
+          .style('stroke-width', 0);
       });
+}
+
+function mouseclick(picUrl, party, senator) {
+    console.log(picUrl, party, senator);
+    div = d3.select('h2');
+
+    if (div['_groups'][0][0] == null) {
+        Tooltip
+            .style("opacity", 1)
+            .append("h2")
+            .style("margin-left", "1rem")
+            .style("margin-bottom", "-.5rem")
+            .text("Perfil individual:");
+        Tooltip.append("div")
+            .style("stroke", "black")
+            .style("display", "flex")
+            .style("flex-direction", "row")
+            .style("padding", "1rem")
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+    } else {
+        Tooltip
+            .style("opacity", 1)
+            .select("h2")
+            .style("margin-left", "1rem")
+            .style("margin-bottom", "-.5rem")
+            .text("Perfil individual:");
+        Tooltip.select("div")
+            .style("stroke", "black")
+            .style("display", "flex")
+            .style("flex-direction", "row")
+            .style("padding", "1rem")
+            .html(`<img height="128px" src="${picUrl}" style="margin-right:1rem"><div>${party}<br>${senator}</div>`);
+    }
 }
 
 async function main () {  
@@ -206,8 +297,8 @@ async function main () {
       })
     const circledata = generateParliamentChart(dataTable.length, 
         {sections: 1, sectionGap: 0, seatRadius: seatRadius, rowHeight: rowHeight}, width);
-    // console.log(circledata);
-    var aggData = dataTable.map(function(data, i){
+    //console.log(circledata);
+    var aggData = dataTable.map(function (data, i) {
         return {x: circledata[i].x, y: circledata[i].y, ...data};
     });
 
@@ -220,15 +311,37 @@ async function main () {
       .attr('x', width/2 - 45)
       .attr('y', height - 2)
       .style('font-size', '5rem')
-      .text(aggData.length);   
+        .text(aggData.length);
+
+
+    var partyList = new Set();
+    for (datinha of dataTable) {
+        partyList.add(datinha[partyKey]);
+    }
+
+    const scndSvg = generateScndSvg();
+    drawSubtitles(scndSvg,partyList, partyColors);
 }
 
 // data URL
 const dataUrl = 'https://raw.githubusercontent.com/nivan/testPython/main/ListaParlamentarEmExercicio.csv';
 // chart parameters
-const width = 928;
-const height = 464;
-const seatRadius = 25;
+const width = 780;
+const height = 390;
+const seatRadius = 20;
 const rowHeight = 55;
 const partyKey = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.SiglaPartidoParlamentar';
+const picUrl = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.UrlFotoParlamentar';
+const senatorName = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.NomeCompletoParlamentar';
+const senatorId = 'ListaParlamentarEmExercicio.Parlamentares.Parlamentar.IdentificacaoParlamentar.CodigoParlamentar';
+// create a tooltip
+var Tooltip = d3.select("#div_template")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "white")
+    .style("border", "solid")
+    .style("border-width", "1px")
+    .style("border-radius", "5px")
+    .style("padding", "5px");
 main();
